@@ -1,0 +1,7 @@
+# Define colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+LIGHT_YELLOW='\033[0;93m'
+GREEN_BG='\033[42m'
+NO_COLOR='\033[0m' # No Color

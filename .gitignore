@@ -1,0 +1,6 @@
+# IDE / Editor
+.idea
+
+# .env files
+/.env.local
+/.env.*.local
