@@ -15,17 +15,17 @@ print_option() {
     local text="$1"
 
     if [[ "$text" == 📂* ]]; then
-        printf "   ${GREEN}%s${NO_COLOR}\n" "$text"
+        printf " ${GREEN}%s${NO_COLOR}\n" "$text"
     elif [[ "$text" == ⚡* ]]; then
-        printf "   ${YELLOW}%s${NO_COLOR}\n" "$text"
+        printf " ${YELLOW}%s${NO_COLOR}\n" "$text"
     elif [[ "$text" == ⬅️* || "$text" == 🚪* ]]; then
-        printf "   ${RED}%s${NO_COLOR}\n" "$text"
+        printf " ${RED}%s${NO_COLOR}\n" "$text"
     else
-        printf "   %s\n" "$text"
+        printf " %s\n" "$text"
     fi
 }
 
-print_selected() { printf "  \033[7m %s \033[27m\n" "$1"; }
+print_selected() { printf "\033[7m %s \033[27m\n" "$1"; }
 
 # Obsługa strzałek i enter
 key_input() {
@@ -48,7 +48,7 @@ select_option() {
 
     while true; do
         clear_screen
-        echo "${GREEN}=== Menu ===${NO_COLOR}"
+        echo "${GREEN}========= Menu =========${NO_COLOR}"
         for i in "${!options[@]}"; do
             if [[ $i -eq $selected ]]; then
                 print_selected "${options[$i]}"
