@@ -11,7 +11,20 @@ cursor_show() { printf "\033[?25h"; }
 clear_screen() { printf "\033[H\033[J"; }
 
 # Rysowanie opcji menu
-print_option() { printf "   %s\n" "$1"; }
+print_option() {
+    local text="$1"
+
+    if [[ "$text" == 📂* ]]; then
+        printf "   ${GREEN}%s${NO_COLOR}\n" "$text"
+    elif [[ "$text" == ⚡* ]]; then
+        printf "   ${YELLOW}%s${NO_COLOR}\n" "$text"
+    elif [[ "$text" == ⬅️* || "$text" == 🚪* ]]; then
+        printf "   ${RED}%s${NO_COLOR}\n" "$text"
+    else
+        printf "   %s\n" "$text"
+    fi
+}
+
 print_selected() { printf "  \033[7m %s \033[27m\n" "$1"; }
 
 # Obsługa strzałek i enter
@@ -54,18 +67,20 @@ select_option() {
     return $selected
 }
 
-# Wczytywanie kategorii z folderów w `commands/`
+# Wczytywanie kategorii (folderów) i zapisanie ich prawdziwych nazw
 get_categories() {
     local categories=()
+    local raw_categories=()
+
     while IFS= read -r category; do
-        categories+=("$category")
+        categories+=("📂 $category")  # Dodajemy ikonę tylko do wyświetlania
+        raw_categories+=("$category") # Surowe nazwy do ścieżek
     done <<< "$(find "$current_dir/commands" -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)"
 
-    printf "%s\n" "${categories[@]}"
+    printf "%s\n" "${categories[@]}" # Zwracamy wersję z ikonami
 }
 
-
-# Wczytywanie komend z plików w danej kategorii
+# Wczytywanie komend w danej kategorii
 get_commands() {
     local category="$1"
     local commands=()
@@ -78,8 +93,11 @@ get_commands() {
 
 # Obsługa podmenu
 handle_submenu() {
-    local category="$1"
-    local commands=($(get_commands "$category"))
+    local category_display="$1"                  # To, co wybrał użytkownik (z ikoną)
+    local category="${category_display:2}"       # Usunięcie pierwszych 2 znaków (ikony i spacji)
+
+    local commands=($(get_commands "$category")) # Pobranie listy komend (z ikonami)
+    local raw_commands=($(find "$current_dir/commands/$category" -mindepth 1 -maxdepth 1 -type f -name "*.sh" -exec basename {} \;))
 
     if [[ ${#commands[@]} -eq 0 ]]; then
         echo "${RED}Brak komend w kategorii ${category}.${NO_COLOR}"
@@ -90,13 +108,14 @@ handle_submenu() {
     local options=()
     local scripts=()
 
-    for command_file in "${commands[@]}"; do
+    for command_file in "${raw_commands[@]}"; do
         source "$current_dir/commands/$category/$command_file"
-        options+=("$COMMAND_NAME")
+        options+=("⚡ $COMMAND_NAME")
         scripts+=("$current_dir/commands/$category/$command_file")
     done
 
-    options+=("Wstecz") # Dodanie opcji powrotu
+
+    options+=("⬅️ Wstecz")  # Dodanie opcji powrotu
 
     while true; do
         select_option "${options[@]}"
@@ -121,7 +140,7 @@ while true; do
     while IFS= read -r category; do
         categories+=("$category")
     done <<< "$(get_categories)"
-    categories+=("Wyjdź") # Dodanie opcji Wyjdź
+    categories+=("🚪 Wyjdź") # Dodanie opcji Wyjdź
 
     select_option "${categories[@]}"
     main_choice=$?
