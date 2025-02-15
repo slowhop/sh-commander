@@ -124,6 +124,7 @@ handle_submenu() {
         if [[ $choice -eq $((${#options[@]} - 1)) ]]; then
             break
         else
+            clear_screen
             echo "Uruchamianie: ${options[$choice]}"
             source "${scripts[$choice]}"
             run_command
