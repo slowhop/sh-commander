@@ -15,3 +15,7 @@ get_legacy_container_id() {
 get_redis_container_id() {
     get_container_id "sh-legacy-redis-1"
 }
+
+get_indexer_container_id() {
+    get_container_id "sh-legacy-indexer"
+}
