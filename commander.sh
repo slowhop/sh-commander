@@ -136,7 +136,11 @@ handle_submenu() {
 # Funkcja zatrzymująca procesy w tle
 cleanup() {
     echo "Zatrzymywanie wszystkich procesów w tle..."
-    jobs -p | xargs -r kill
+    jobs -p | while read -r job; do
+        if kill -0 "$job" 2> /dev/null; then
+            kill "$job"
+        fi
+    done
     cursor_show
     exit 0
 }
