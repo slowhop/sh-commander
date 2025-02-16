@@ -69,7 +69,7 @@ run_command() {
         mkdir -p "$logs_dir"
 
         # Uruchomienie komendy w kontenerze indexer i przekierowanie wyjścia do pliku
-        docker exec "$index_container_id" bin/console messenger:consume --env=staging -- product > "$indexer_logs_file" 2>&1 &
+        docker exec "$index_container_id" bin/console messenger:consume --env=docker -- product > "$indexer_logs_file" 2>&1 &
         local indexer_pid=$!
         echo "${YELLOW}[Commander] ${GREEN}Konsumowanie wiadomości uruchomione w kontenerze indexer.${NO_COLOR}"
         echo ""
