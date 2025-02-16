@@ -101,6 +101,8 @@ run_command() {
 
         wait $legacy_pid
 
+        echo "${YELLOW}[Commander] ${GREEN}Reindeksacja produktów uruchomiona w kontenerze legacy zakończona.${NO_COLOR}"
+
         # Monitorowanie wiadomości konsumpcji w kontenerze indexer
         echo "${YELLOW}[Commander] ${GREEN}Monitorowanie konsumpcji wiadomości w kontenerze indexer przez 10 sekund...${NO_COLOR}"
         local end_time=$((SECONDS + 10))
