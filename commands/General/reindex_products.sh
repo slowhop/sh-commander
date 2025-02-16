@@ -2,13 +2,29 @@
 
 COMMAND_NAME="Reindex:Products"
 
-update_processed_count() {
-    local new_count=$(grep -o "ProductToIndexMessage was handled successfully" "$indexer_logs_file" | wc -l)
+get_processed_count() {
+    grep -o "ProductToIndexMessage was handled successfully" "$indexer_logs_file" | wc -l
+}
 
-    if [ "$new_count" -ne "$processed_count" ]; then
-        tput sc
-        printf "${YELLOW}[Commander] ${GREEN}Przetworzono produktów:${NO_COLOR} %d\r" "$new_count"
-        tput rc
+update_processed_count() {
+    local no_cursor_control=false  # Domyślnie zapisujemy i przywracamy kursor
+    local new_count=$(get_processed_count)
+
+    # Sprawdzanie, czy przekazano parametr, który wyłącza zapisywanie kursora
+    if [ "$1" == "no_cursor" ]; then
+        no_cursor_control=true
+    fi
+
+    # Zaktualizowany warunek, który uwzględnia także no_cursor_control
+    if [ "$new_count" -ne "$processed_count" ] || [ "$no_cursor_control" = true ]; then
+        if [ "$no_cursor_control" = false ]; then
+            tput sc  # Zapisz pozycję kursora
+            printf "${YELLOW}[Commander] ${GREEN}Przetworzono produktów:${NO_COLOR} %d\r" "$new_count"
+            tput rc  # Przywróć pozycję kursora
+        else
+            echo "${YELLOW}[Commander] ${GREEN}Przetworzono produktów:${NO_COLOR} $new_count"
+        fi
+
         processed_count=$new_count
     fi
 }
@@ -88,21 +104,27 @@ run_command() {
         # Monitorowanie wiadomości konsumpcji w kontenerze indexer
         echo "${YELLOW}[Commander] ${GREEN}Monitorowanie konsumpcji wiadomości w kontenerze indexer przez 10 sekund...${NO_COLOR}"
         local end_time=$((SECONDS + 10))
+        local last_count=$(get_processed_count)
+
         while [ $SECONDS -lt $end_time ]; do
-            update_processed_count
-            if grep -q "ProductToIndexMessage" "$indexer_logs_file"; then
+            local new_count=$(get_processed_count)
+
+            if [ "$new_count" -ne "$last_count" ]; then
                 echo "${YELLOW}[Commander] ${GREEN}Wykryto nowe wiadomości. Resetowanie czasu oczekiwania.${NO_COLOR}"
                 end_time=$((SECONDS + 10))
-                > "$indexer_logs_file"  # Czyszczenie pliku logów
+                last_count=$new_count
             fi
+
             sleep 1
         done
+
+        update_processed_count "no_cursor"
 
         echo "${YELLOW}[Commander] ${GREEN}Konsumowanie wiadomości zakończone.${NO_COLOR}"
 
         # Zakończenie procesu indexera, jeśli jeszcze istnieje
         if kill -0 $indexer_pid 2> /dev/null; then
-            kill $indexer_pid
+            kill $indexer_pid 2>> "$legacy_logs_file"
             echo "${YELLOW}[Commander] ${GREEN}Proces indexera został zakończony.${NO_COLOR}"
         fi
 
