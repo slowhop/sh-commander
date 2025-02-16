@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 current_dir=$(dirname "${BASH_SOURCE[0]}")
+logs_dir="$current_dir/logs"
 
 source "$current_dir/lib/colors.sh"
 source "$current_dir/lib/docker_utils.sh"
@@ -132,9 +133,18 @@ handle_submenu() {
     done
 }
 
+# Funkcja zatrzymująca procesy w tle
+cleanup() {
+    echo "Zatrzymywanie wszystkich procesów w tle..."
+    jobs -p | xargs -r kill
+    cursor_show
+    exit 0
+}
+
 # Główna pętla menu
 cursor_hide
 trap cursor_show EXIT
+trap cleanup SIGINT
 
 while true; do
     categories=()
