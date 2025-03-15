@@ -3,7 +3,7 @@
 COMMAND_NAME="ExchangeRates:Update"
 
 run_command() {
-    printf "${GREEN}[Commander] Uruchamianie aktualizacji kursów walut...${NO_COLOR}\n"
+    printf "${YELLOW}[Commander] ${GREEN}Uruchamianie aktualizacji kursów walut...${NO_COLOR}\n"
 
     CONTAINER_ID=$(get_legacy_container_id)
     if [ -z "$CONTAINER_ID" ]; then
@@ -11,10 +11,18 @@ run_command() {
     else
         currencies=("pln" "eur" "czk" "usd" "huf" "chf" "gbp" "uah" "dkk" "nok" "sek")
         for currency in "${currencies[@]}"; do
-            docker exec "$CONTAINER_ID" bin/console slowhop:pricing:currency:update-exchange-rates "$currency" -e docker --pretty &
+            printf "${YELLOW}[Commander] ${GREEN}Aktualizuję: ${NO_COLOR}%s ${GREEN}...\n" "$currency"
+
+            RESULT=$(docker exec "$CONTAINER_ID" bin/console slowhop:pricing:currency:update-exchange-rates "$currency" -e docker --pretty 2>&1)
+
+            if [[ $? -eq 0 ]]; then
+                printf "${YELLOW}[Commander] ${NO_COLOR}%s ${GREEN}zaktualizowano pomyślnie.${NO_COLOR}\n" "$currency"
+            else
+                printf "${RED}[Commander] Błąd podczas aktualizacji: %s.${NO_COLOR}\n" "$currency"
+            fi
         done
         wait
-        printf "${GREEN}[Commander] Aktualizacja zakończona${NO_COLOR}\n"
+        printf "${YELLOW}[Commander] ${GREEN}Aktualizacja zakończona${NO_COLOR}\n"
     fi
 
     read -p "Naciśnij Enter, aby kontynuować..."
