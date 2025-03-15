@@ -122,7 +122,7 @@ run_command() {
 
         update_processed_count "no_cursor"
 
-        echo "${YELLOW}[Commander] ${GREEN}Konsumowanie wiadomości zakończone.${NO_COLOR}"
+        printf "${YELLOW}[Commander] ${GREEN}Konsumowanie wiadomości zakończone.${NO_COLOR}\n"
 
         # Zakończenie procesu indexera, jeśli jeszcze istnieje
         if kill -0 $indexer_pid 2> /dev/null; then
