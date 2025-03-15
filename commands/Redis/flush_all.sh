@@ -3,14 +3,14 @@
 COMMAND_NAME="Flush all"
 
 run_command() {
-  echo "${GREEN}[Commander] Uruchamianie czyszczenia redisa ...${NO_COLOR}"
+  printf "${GREEN}[Commander] Uruchamianie czyszczenia redisa ...${NO_COLOR}\n"
 
   CONTAINER_ID=$(get_redis_container_id)
   if [ -z "$CONTAINER_ID" ]; then
-      echo "${RED}Nie znaleziono kontenera redisa.${NO_COLOR}"
+      printf "${RED}Nie znaleziono kontenera redisa.${NO_COLOR}\n"
   else
       docker exec "$CONTAINER_ID" redis-cli flushall
-      echo "${GREEN}[Commander] Czyszczenie redisa zakończone.${NO_COLOR}"
+      printf "${GREEN}[Commander] Czyszczenie redisa zakończone.${NO_COLOR}\n"
   fi
 
   read -p "Naciśnij Enter, aby kontynuować..."

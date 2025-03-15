@@ -49,7 +49,7 @@ select_option() {
 
     while true; do
         clear_screen
-        echo "${GREEN}========= Menu =========${NO_COLOR}"
+        printf "${GREEN}========= Menu =========${NO_COLOR}\n"
         for i in "${!options[@]}"; do
             if [[ $i -eq $selected ]]; then
                 print_selected "${options[$i]}"

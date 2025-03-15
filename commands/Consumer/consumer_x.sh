@@ -3,6 +3,6 @@
 COMMAND_NAME="Consumer X"
 
 run_command() {
-    echo "${GREEN}[Commander] Uruchamianie Consumer X...${NO_COLOR}"
+    printf "${GREEN}[Commander] Uruchamianie Consumer X...${NO_COLOR}\n"
     read -p "Naciśnij Enter, aby kontynuować..."
 }
