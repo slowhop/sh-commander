@@ -56,6 +56,9 @@ run_command() {
 
     # Uruchomienie skryptów, jeśli oba kontenery istnieją
     if [ "$can_run_script" = true ]; then
+        # Utworzenie folderu logs, jeśli nie istnieje
+        mkdir -p "$logs_dir"
+
         # Czyszczenie indeksu w kontenerze indexer
         docker exec "$index_container_id" bin/console slowhop:index:recreate -i lightcard -e docker
         printf "${YELLOW}[Commander] ${GREEN}Indeks wyczyszczony w kontenerze indexer.${NO_COLOR}\n"
@@ -64,9 +67,6 @@ run_command() {
         docker exec "$legacy_container_id" php -d memory_limit=1G bin/console slowhop:light:reindex -e docker -n > "$legacy_logs_file" 2>&1 &
         local legacy_pid=$!
         printf "${YELLOW}[Commander] ${GREEN}Reindeksacja lightcardów uruchomiona w kontenerze legacy.${NO_COLOR}\n"
-
-        # Utworzenie folderu logs, jeśli nie istnieje
-        mkdir -p "$logs_dir"
 
         # Uruchomienie komendy w kontenerze indexer i przekierowanie wyjścia do pliku
         docker exec "$index_container_id" bin/console messenger:consume --env=docker -- lightcard > "$indexer_logs_file" 2>&1 &
