@@ -76,7 +76,7 @@ get_categories() {
     while IFS= read -r category; do
         categories+=("📂 $category")  # Dodajemy ikonę tylko do wyświetlania
         raw_categories+=("$category") # Surowe nazwy do ścieżek
-    done <<< "$(find "$current_dir/commands" -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)"
+    done <<< "$(find "$current_dir/commands" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort)"
 
     printf "%s\n" "${categories[@]}" # Zwracamy wersję z ikonami
 }
@@ -106,28 +106,51 @@ handle_submenu() {
         return
     fi
 
-    local options=()
+    #  -------- Get commands info --------
+    local command_names=()
     local scripts=()
 
     for command_file in "${raw_commands[@]}"; do
         source "$current_dir/commands/$category/$command_file"
-        options+=("⚡ $COMMAND_NAME")
-        scripts+=("$current_dir/commands/$category/$command_file")
+        if [[ -n "$COMMAND_NAME" ]]; then
+            command_names+=("$COMMAND_NAME")
+            scripts+=("$current_dir/commands/$category/$command_file")
+        fi
     done
 
+    #  -------- Sort commands --------
+    local sorted_options=()
+    local sorted_scripts=()
 
-    options+=("⬅️ Wstecz")  # Dodanie opcji powrotu
+    while [[ ${#command_names[@]} -gt 0 ]]; do
+        local min_index=0
+        for i in "${!command_names[@]}"; do
+            if [[ "${command_names[$i]}" < "${command_names[$min_index]}" ]]; then
+                min_index=$i
+            fi
+        done
+
+        sorted_options+=("⚡ ${command_names[$min_index]}")
+        sorted_scripts+=("${scripts[$min_index]}")
+
+        unset "command_names[$min_index]"
+        unset "scripts[$min_index]"
+        command_names=("${command_names[@]}")
+        scripts=("${scripts[@]}")
+    done
+
+    sorted_options+=("⬅️ Wstecz")  # Dodanie opcji powrotu
 
     while true; do
-        select_option "${options[@]}"
+        select_option "${sorted_options[@]}"
         local choice=$?
 
-        if [[ $choice -eq $((${#options[@]} - 1)) ]]; then
+        if [[ $choice -eq $((${#sorted_options[@]} - 1)) ]]; then
             break
         else
             clear_screen
-            echo "Uruchamianie: ${options[$choice]}"
-            source "${scripts[$choice]}"
+            echo "Uruchamianie: ${sorted_options[$choice]}"
+            source "${sorted_scripts[$choice]}"
             run_command
         fi
     done
