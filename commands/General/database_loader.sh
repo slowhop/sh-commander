@@ -61,20 +61,8 @@ create_directories() {
 }
 
 is_sso_logged_in() {
-  # Szukamy tokenów SSO w cache
-  for file in ~/.aws/sso/cache/*.json; do
-    if grep -q '"expiresAt"' "$file"; then
-      expires=$(jq -r '.expiresAt' "$file")
-      now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-
-      # Jeśli token nadal ważny
-      if [[ "$expires" > "$now" ]]; then
-        return 0
-      fi
-    fi
-  done
-
-  return 1
+  aws sts get-caller-identity &> /dev/null
+  return $?
 }
 
 ensure_aws_login() {
@@ -111,6 +99,9 @@ unpack_backup() {
   BASENAME=$(basename "$LATEST_FILE")
   printf "📦 Wypakowuję archiwum: $BASENAME\n"
   tar -xzvf "$DEST_DIR/$BASENAME" -C "$DEST_DIR_UNPACKED"
+
+  printf "🧹 Usuwam archiwum: $BASENAME\n"
+  rm -f "$DEST_DIR/$BASENAME"
 }
 
 import_database() {
