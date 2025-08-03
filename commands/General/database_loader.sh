@@ -144,5 +144,5 @@ run_command() {
 
   import_database
 
-   read -p "Naciśnij Enter, aby kontynuować..."
+  read -p "Naciśnij Enter, aby kontynuować..."
 }
